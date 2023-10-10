@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 import pygame.sprite
+from pygame import Color
 
 POINT_SIZE = 5
 POINTS = [(182, 177), (205, 142), (283, 140), (339, 176), (324, 244), (248, 306), (187, 279), (220, 236), (241, 218),
@@ -24,25 +25,19 @@ POINTS = [(182, 177), (205, 142), (283, 140), (339, 176), (324, 244), (248, 306)
           (244, 184), (73, 257), (266, 186), (214, 224), (1271, 353), (1307, 351), (1318, 383), (1301, 391),
           (1269, 396), (1270, 379), (1256, 330), (1297, 319), (1337, 351), (1346, 390), (1280, 438), (1236, 400),
           (1237, 359), (1314, 424), (1319, 424)]
-WIDTH, HEIGHT = 1366, 768
+WIDTH, HEIGHT = 800, 600
 
-BLACK = 0, 0, 0
-LIGHTBLACK = 25, 25, 25
-LIGHTERBLACK = 39, 39, 55
-WHITE = 255, 255, 255
-DARK_WHITE = 200, 200, 230
-PINK = (223, 0, 125)
-LIGHTBEIGE = 181, 136, 99
-PURPLE = (155, 31, 233)
-BROWN = (89, 62, 49)
-GREEN = (0, 255, 1)
-ORANGE = (250, 154, 0)
-RED = 250, 41, 76
-GRAY = (185, 224, 226)
-BLUE = (0, 0, 255)
-YELLOW = (253, 253, 4)
+MEANS_COLOR = [Color("red"), Color("green"), Color("blue"), Color("purple"), Color("yellow"), Color("orange")]
 
-MEANS_COLOR = [RED, GREEN, BLUE, PURPLE, YELLOW, ORANGE]
+
+def generate_points(n_points, n_groups, width, height, std=50) -> list:
+    points = []
+    for i in range(n_groups):
+        x = np.random.normal(np.random.randint(std, width - std), std, n_points)
+        y = np.random.normal(np.random.randint(std, height - std), std, n_points)
+        for j in range(n_points):
+            points.append((x[j], y[j]))
+    return points
 
 
 def distance(p1, p2):
@@ -80,7 +75,7 @@ class Point:
 
     def draw(self, win):
         pygame.draw.circle(win, MEANS_COLOR[self.id_cluster], self.pos, self.size)
-        pygame.draw.circle(win, BLACK, self.pos, self.size, 1)
+        pygame.draw.circle(win, Color("black"), self.pos, self.size, 1)
 
 
 class Game:
@@ -88,23 +83,23 @@ class Game:
         self.game_is_on = True
         self.win = win
 
-        self.k = 5
+        self.nb_groups = 5
         self.points = []
-        self.means = [Centroid(i) for i in range(self.k)]
+        self.means = [Centroid(i) for i in range(self.nb_groups)]
 
         self.iterations = 0
 
         self.load_points()
 
     def load_points(self):
-        for point in POINTS:
+        for point in generate_points(10, self.nb_groups, WIDTH, HEIGHT):
             self.points.append(Point(point[0], point[1]))
 
     def run(self):
         clock = pygame.time.Clock()
         while self.game_is_on:
             clock.tick(60)
-            self.win.fill(DARK_WHITE)
+            self.win.fill(Color("white"))
             self.events()
             self.draw(self.win)
 
